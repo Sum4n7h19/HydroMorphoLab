@@ -1,0 +1,15 @@
+ numpy = 1.26.4
+ rasterio
+ flask
+ requests
+ flask_cors
+ flask_restful
+ geopandas
+ shapely
+ pysheds
+ matplotlib
+ json
+ zipfile
+ pyproj
+ os
+ geospatial

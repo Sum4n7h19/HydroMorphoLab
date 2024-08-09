@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base target="_top" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>HydroMorpho Lab</title>
+    <link rel="shortcut icon" href="../static/images/Hydromorpho lab.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+      html {
+        height: 100%;
+        width: 100%;
+        background-color: antiquewhite;
+      }
+      #map {
+        max-width: 100%;
+        max-height: 100%;
+        height: 720px;
+        width: 100vw;
+      }
+
+      .grid-container {
+        display: grid;
+        grid-template-columns: 20% 80%;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        gap: 0;
+      }
+      .grid-item {
+        display: flex;
+        flex-direction: column;
+        background-color: antiquewhite;
+        height: 720px;
+        width: 100%;
+        padding: auto;
+      }
+      h1 {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        font-family: Georgia, "Times New Roman", Times, serif;
+        font-size: 30px;
+      }
+      .mouse {
+        border: none;
+        text-align: right;
+        background-color: antiquewhite;
+        font-weight: bold;
+      }
+      #loading-bar {
+        display: none; /* Hidden by default */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background-color: #3498db;
+        z-index: 1000;
+      }
+      #loading-bar.active {
+        display: block; /* Show loading bar when active */
+        animation: loading 2s infinite;
+      }
+      @keyframes loading {
+        0% {
+          width: 0%;
+        }
+        100% {
+          width: 100%;
+        }
+      }
+
+      #sidebox {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid #ccc;
+        z-index: 1001;
+      }
+      .location {
+        position: absolute;
+        align-items: center;
+        top: 100px;
+        left: 20px;
+      }
+      .morphometry {
+        position: absolute;
+        top: 250px;
+        left: 20px;
+      }
+      .MD {
+        border: none;
+        text-align: center;
+        background-color: antiquewhite;
+        font-weight: bold;
+      }
+      .button1 {
+        margin: 10px;
+        padding: 20px 10px;
+        overflow: auto;
+        font-size: 15px;
+        font-weight: bold;
+        border: 1px;
+        border-radius: 10px;
+        background-color: rgb(177, 172, 116);
+        cursor: pointer;
+        transition: background-color 0.3s ease-in-out;
+        position: absolute;
+        bottom: 75px;
+        left: 15px;
+        display: inline-block;
+      }
+      .button1:hover {
+        background-color:rgb(226, 220, 152);
+    }
+    .button2 {
+      margin: 10px;
+      padding: 20px 63px;
+      font-size: 15px;
+      font-weight: bold;
+      border: 1px;
+      border-radius: 10px;
+      background-color: rgb(177, 172, 116);
+      cursor: pointer;
+      transition: background-color 0.3s ease-in-out;
+      position: absolute;
+      bottom: 10px;
+      left: 15px;
+      display: inline-block;
+    }
+    .button2:hover {
+      background-color:rgb(226, 220, 152);
+  }
+  .button3 {
+    margin: 10px;
+    padding: 20px 10px;
+    overflow: auto;
+    font-size: 15px;
+    font-weight: bold;
+    border: 1px;
+    border-radius: 10px;
+    background-color: rgb(177, 172, 116);
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+    position: absolute;
+    bottom: 75px;
+    left: 165px;
+    display: inline-block;
+  }
+  .button3:hover {
+    background-color:rgb(226, 220, 152);
+}
+      button {
+        border: 1px;
+        border-radius: 4px;
+        font-weight: bold;
+        background-color: rgb(177, 172, 116);
+        cursor: pointer;
+        transition: background-color 0.3s ease-in-out;
+        
+      }
+      button:hover {
+        background-color:rgb(226, 220, 152);
+    }
+    </style>
+  </head>
+  <body>
+    <div class="grid-container" id="gridContainer">
+      <div class="grid-item" id="grid">
+        <h1>HydroMorpho Lab</h1>
+        <div class="location" id="location">
+          <fieldset>
+            <legend>  <img src="../static/images/pin.png" height="20px" width="20px"> Map Location:</legend>
+            <img src="../static/images/hand-pointer.png" height="20px" width="20px">
+            Pointer (lat, lon):
+
+            <input
+              type="text"
+              name="mouselat"
+              value="0.000"
+              id="mouselat"
+              size="2"
+              readonly="readonly"
+              disabled
+              class="mouse"
+            />
+            ,
+            <input
+              type="text"
+              name="mouselon"
+              value="0.000"
+              id="mouselon"
+              size="2"
+              readonly="readonly"
+              disabled
+              class="mouse"
+            />
+            <br /><br />
+            <img src="../static/images/search.png" height="20px" width="20px">
+            Zoom level:
+            <input
+              type="text"
+              name="zoom"
+              value="2"
+              id="zoom"
+              size="5"
+              readonly="readonly"
+              disabled
+              class="mouse"
+            />
+          </fieldset>
+        </div>
+        <br><br>
+        <div class="morphometry">
+          <fieldset>
+            <legend> <img src="../static/images/jungle.png" height="20px" width="20px"> Morphometry Data:</legend>
+            Area a:
+            <input
+              type="text"
+              name="zoom"
+              value="0.00000"
+              id="a"
+              size="5"
+              readonly="readonly"
+              disabled
+              class="MD"
+            /> Sq.Km<br /><br />
+            Perimeter P:
+            <input
+              type="text"
+              name="zoom"
+              value="0.00000"
+              id="p"
+              size="5"
+              readonly="readonly"
+              disabled
+              class="MD"
+            />Km<br /><br />
+            Basin Length Lb:
+            <input
+              type="text"
+              name="zoom"
+              value="0.00000"
+              id="lb"
+              size="5"
+              readonly="readonly"
+              disabled
+              class="MD"
+            />Km<br /><br />
+            Drainge Density Dd:
+            <input
+              type="text"
+              name="zoom"
+              value="0.00000"
+              id="Dd"
+              size="5"
+              readonly="readonly"
+              disabled
+              class="MD"
+            />per Km<br /><br />
+            Form Factory F:
+            <input
+              type="text"
+              name="zoom"
+              value="0.00000"
+              id="F"
+              size="5"
+              readonly="readonly"
+              disabled
+              class="MD"
+            /><br /><br />
+            Circulatory Index Rc:
+            <input
+              type="text"
+              name="zoom"
+              value="0.00000"
+              id="Rc"
+              size="5"
+              readonly="readonly"
+              disabled
+              class="MD"
+            /><br /><br />
+            Elongatio Ratio Re:
+            <input
+              type="text"
+              name="zoom"
+              value="0.00000"
+              id="Re"
+              size="5"
+              readonly="readonly"
+              disabled
+              class="MD"
+            />
+          </fieldset>
+        </div>
+        <div class="buttons">
+        <button class="button1", id="button1">Download Report</button>
+        <button class="button3", id="button3">Download PDF</button>
+        <button id="button", class="button2">Download Shapefiles</button>
+      </div>
+      </div>
+      <div
+        class="leaflet-container leaflet-touch leaflet-retina leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom"
+      >
+        <div id="map"></div>
+        <div id="loading-bar"></div>
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+        <script src="https://unpkg.com/leaflet-image/leaflet-image.js"></script>
+        <script src="../static/js/script.js"></script>
+      </div>
+    </div>
+  </body>
+</html>
